@@ -9,9 +9,9 @@ from apps.base.models import BaseModel
 class UserModel(BaseModel,AbstractUser):
     name = models.CharField(max_length=255)
     role = models.CharField(max_length=10, choices=UserRol.choices())
-    phone = models.CharField(max_length=255)
-    email = models.CharField(max_length=255)
-    inn = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    email = models.CharField(max_length=255, null=True, blank=True)
+    inn = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name
