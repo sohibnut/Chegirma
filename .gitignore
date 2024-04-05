@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 */*/migrations
 db.sqlite3
+media
 # C extensions
 *.so
 kenv
