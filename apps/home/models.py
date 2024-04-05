@@ -2,7 +2,7 @@ from django.db import models
 from apps.base.models import BaseModel
 from mptt.models import MPTTModel, TreeForeignKey
 from apps.accounts.models import UserModel
-from apps.base.enum import CommentType
+from apps.base.enum import CommentType, ProductStatus
 from django.core.validators import FileExtensionValidator
 # Create your models here.
 
@@ -15,7 +15,7 @@ class Category(MPTTModel, BaseModel):
     def __str__(self):
         return self.name
     
-class Size(MPTTModel, BaseModel):
+class Size(BaseModel):
     name = models.CharField(max_length=255, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_size')
     def __str__(self):
@@ -41,6 +41,7 @@ class Product(BaseModel):
     link = models.URLField(null=True, blank=True)
     size = models.ManyToManyField(Size, related_name='size_products')
     color = models.ManyToManyField(Color, related_name='color_products')
+    status = models.CharField(max_length=10, choices=ProductStatus.choices())
 
     @property
     def get_descount(self):
