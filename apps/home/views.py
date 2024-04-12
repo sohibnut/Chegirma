@@ -42,7 +42,7 @@ class WishlistGetApiView(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            products = WishlistItem.objects.all()
+            products = WishlistItem.objects.all().order_by("product")
             paginator = self.pagination_class()
             result_page = paginator.paginate_queryset(products, request)
             
