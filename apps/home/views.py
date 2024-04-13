@@ -36,27 +36,15 @@ class ProductListView(ListCreateAPIView):
 
         category_uuid = self.request.query_params.get('category_uuid', None)
         color_uuid = self.request.query_params.get('color_uuid', None)
+        max_price = self.request.query_params.get('max_price')
+        min_price = self.request.query_params.get('min_price')
 
         if category_uuid:
             queryset = queryset.filter(category__uuid=category_uuid)
         if color_uuid:
             queryset = queryset.filter(color__uuid=color_uuid)
-
-        return queryset
-
-
-class ProductPriceView(ListCreateAPIView):
-    serializer_class = ProductCategorySerializer
-    permission_classes = [AllowAny]
-
-    def get_queryset(self):
-        queryset = Product.objects.all()
-        max_price = self.request.query_params.get('max_price')
-        min_price = self.request.query_params.get('min_price')
-
         if min_price is not None:
             queryset = queryset.filter(discount_price__gte=min_price)
         if max_price is not None:
             queryset = queryset.filter(discount_price__lte=max_price)
-
         return queryset
