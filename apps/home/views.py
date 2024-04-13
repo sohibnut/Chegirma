@@ -1,8 +1,10 @@
+import uuid
 from rest_framework.views import APIView
 from .serializers import ProductCategorySerializer
 from .models import Product
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.generics import ListCreateAPIView
 
 
 class ProductCategoryView(APIView):
@@ -24,3 +26,20 @@ class SellerView(APIView):
         serializer_data = self.serializer_class(queryset, many=True)
         return Response(serializer_data.data)
 
+
+class ProductListView(ListCreateAPIView):
+    serializer_class = ProductCategorySerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+
+        category_uuid = self.request.query_params.get('category_uuid', None)
+        color_uuid = self.request.query_params.get('color_uuid', None)
+
+        if category_uuid:
+            queryset = queryset.filter(category__uuid=category_uuid)
+        if color_uuid:
+            queryset = queryset.filter(color__uuid=color_uuid)
+
+        return queryset
