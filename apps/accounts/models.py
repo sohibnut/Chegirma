@@ -10,7 +10,7 @@ class UserModel(BaseModel,AbstractUser):
     name = models.CharField(max_length=255)
     role = models.CharField(max_length=10, choices=UserRol.choices())
     phone = models.CharField(max_length=255, null=True, blank=True)
-    email = models.CharField(max_length=255, null=True, blank=True)
+    email = models.EmailField(max_length=255, null=True, blank=True)
     inn = models.CharField(max_length=255, null=True, blank=True)
     step = models.CharField(max_length=20, choices=UserStep.choices())
     def __str__(self) -> str:
@@ -25,7 +25,7 @@ class ContactModel(BaseModel):
         FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'svg', 'heic', 'heif'])
     ])
     phone = models.CharField(max_length=255, null=True, blank=True)
-    email = models.CharField(max_length=255, null=True, blank=True)
+    email = models.EmailField(max_length=255, null=True, blank=True)
     site = models.CharField(max_length=255, null=True, blank=True)
     tg_link = models.CharField(max_length=255, null=True, blank=True)
     disc = models.TextField(null=True, blank=True)
