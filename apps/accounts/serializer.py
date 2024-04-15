@@ -1,9 +1,7 @@
 
 from rest_framework import serializers
 from .models import UserModel
-
-from .models import User
-from base.utils import check_email, send_email, check_username, check_user
+from apps.base.utils import check_email, send_email, check_username, check_user
 from rest_framework.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.contrib.auth.password_validation import validate_password
@@ -18,18 +16,19 @@ class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = (
-            'id',
+            'uuid',
             'step',
             'email'
         )
         extra_kwargs = {
-            'id' : {'read_only' : True},
+            'uuid' : {'read_only' : True},
             'step' : {'read_only' : True, 'required' : False} 
         }
 
     def create(self, validated_data):
         user = super(SignUpSerializer, self).create(validated_data)
-        code = user.create_code()
+        code = user.
+        ()
         send_email(user.email, code)
         return user
     
