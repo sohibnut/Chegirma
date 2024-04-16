@@ -115,3 +115,4 @@ class LogoutApiView(APIView):
                 "message" : str(e)
             }
             return Response(data, status=400)
+

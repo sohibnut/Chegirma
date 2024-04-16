@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 from .models import UserModel
 from apps.base.utils import check_email, send_email, check_username, check_user
@@ -27,8 +26,7 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = super(SignUpSerializer, self).create(validated_data)
-        code = user.
-        ()
+        code = user.create_code()
         send_email(user.email, code)
         return user
     
@@ -77,7 +75,7 @@ class PersonalDataSerializer(serializers.Serializer):
                 'message' : 'Username yaroqsiz'
             }
             raise ValidationError(data)
-        if User.objects.filter(username=username).exists():
+        if UserModel.objects.filter(username=username).exists():
             data = {
                 'status' : False,
                 'message' : 'Username mavjud'
@@ -135,7 +133,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             "password" : password
         }
         
-        user1 = User.objects.get(username = username)
+        user1 = UserModel.objects.get(username = username)
         if user1.step != "complate":
             data = {
             'status' : False,
@@ -154,7 +152,7 @@ class LoginSerializer(TokenObtainPairSerializer):
             raise ValidationError(data) 
         
     def auth_user(self, email):
-        user = User.objects.get(email = email)
+        user = UserModel.objects.get(email = email)
         if not user:
             data = {
             'status' : False,
@@ -176,3 +174,4 @@ class LoginSerializer(TokenObtainPairSerializer):
     
 class LogoutSerializers(serializers.Serializer):
     refresh = serializers.CharField()
+

@@ -61,7 +61,7 @@ def send_email(email, code):
     )
     Email.send_email(
         {
-            'subject' : 'youtubedan ruyxatdan otish',
+            'subject' : 'ruyxatdan otish',
             'body' : html_content,
             'to_email' : email,
             'content_type' : 'html', 
