@@ -66,3 +66,4 @@ class Comment(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.author.name} -> comment -> {self.product.name}"
+    
