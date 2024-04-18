@@ -58,7 +58,7 @@ class WishlistItem(BaseModel):
         return f"{self.user.name} -> WishListItem -> {self.product.name}"
 
 class Comment(BaseModel):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_comments', blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_comments', blank=True, null=True)
     author = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user_comments', blank=True)
     type = models.CharField(max_length=10,choices=CommentType.choices())
     text = models.TextField()
