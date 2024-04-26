@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-import datetime
+from datetime import datetime 
 
 
 
@@ -19,7 +19,7 @@ class SignUpApiView(CreateAPIView):
     serializer_class = SignUpSerializer
 
 class VerifyCodeApiView(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (AllowAny , )
     def post(self, request, *args, **kwargs):
         user = self.request.user
         code = self.request.data.get('code')

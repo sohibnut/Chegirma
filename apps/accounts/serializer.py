@@ -27,6 +27,8 @@ class SignUpSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = super(SignUpSerializer, self).create(validated_data)
         code = user.create_code()
+        user.username = user.email
+        user.save()
         send_email(user.email, code)
         return user
     
@@ -42,9 +44,6 @@ class PersonalDataSerializer(serializers.Serializer):
     first_name = serializers.CharField(write_only=True, required=True)
     last_name = serializers.CharField(write_only=True, required=True)
     username = serializers.CharField(write_only=True, required=True)
-    photo = serializers.ImageField(validators=[
-        FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'svg', 'heic', 'heif'])
-    ])
     password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
     
@@ -92,12 +91,13 @@ class PersonalDataSerializer(serializers.Serializer):
         instance.password = validated_data.get('password', instance.password)
         if validated_data.get('password'):
             instance.set_password(validated_data.get('password'))
-        instance.photo = validated_data.get('photo', instance.photo)
         if instance.step == 'verify_code':
             instance.step = 'complate'
+        instance.token()
         instance.save()
         
-        return instance
+        
+
         
         
 
@@ -115,10 +115,7 @@ class LoginSerializer(TokenObtainPairSerializer):
          
             username = self.auth_user(user_input)
             
-        elif check_user(user_input) == "username":
-            
-            username = user_input
-            
+        
         else:
             data = {
                 'status' : False,
