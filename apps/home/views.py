@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import Taqoslash
 from .serializers import TaqoslashSerializer
 
-class CompareProductsView(generics.ListAPIView):
+class TaqoslashView(generics.ListAPIView):
     serializer_class = TaqoslashSerializer
 
     def get_queryset(self):

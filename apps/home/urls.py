@@ -1,8 +1,8 @@
 # urls.py
 from django.urls import path
-from .views import CompareProductsView
+from .views import TaqoslashView
 
 urlpatterns = [
-    path('compare/', CompareProductsView.as_view(), name='compare-products'),
+    path('taqoslash/', TaqoslashView.as_view(), name='compare-products'),
 ]
 
