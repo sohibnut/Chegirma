@@ -56,12 +56,13 @@ class Email:
         
 def send_email(email, code):
     html_content = render_to_string(
-        'auth/send_email_code.html',
-        {'code' : code},        
-    )
+        template_name='auth/send_email_code.html',
+        context={'code' : code},        
+    )   
     Email.send_email(
         {
-            'subject' : 'youtubedan ruyxatdan otish',
+            'subject' : 'ruyxatdan otish',
+            # 'body' : f"Sizning tasdiqlash kodingiz: {code}",
             'body' : html_content,
             'to_email' : email,
             'content_type' : 'html', 

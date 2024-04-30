@@ -14,7 +14,7 @@ class UserModel(BaseModel,AbstractUser):
     name = models.CharField(max_length=255)
     role = models.CharField(max_length=10, choices=UserRol.choices())
     phone = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField(max_length=255, null=True, blank=True)
+    email = models.EmailField(max_length=255, null=True, blank=True,unique=True)
     inn = models.CharField(max_length=255, null=True, blank=True)
     step = models.CharField(max_length=20, choices=UserStep.choices())
     

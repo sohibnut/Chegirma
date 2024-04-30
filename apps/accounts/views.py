@@ -1,11 +1,14 @@
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView,UpdateAPIView
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from .serializer import SignUpSerializer,PersonalDataSerializer,LoginSerializer,LogoutSerializers
+from .models import UserModel
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import UserModel
-from datetime import datetime
+from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
+from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
+from datetime import datetime 
 from .signup_serializers import SellerSignUpSerializer, SellerDataSerializer, UserContactSerializer
 # Create your views here.
 class SellerSignUpApiView(CreateAPIView):
@@ -13,6 +16,72 @@ class SellerSignUpApiView(CreateAPIView):
     model = UserModel 
     serializer_class = SellerSignUpSerializer
 
+class SignUpApiView(CreateAPIView):
+    permission_classes = (AllowAny, )
+    queryset = UserModel.objects.all()
+    serializer_class = SignUpSerializer
+
+class PersonalDataUpdadeApiView(UpdateAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = PersonalDataSerializer
+    http_method_names = ['put', 'patch']
+    def get_object(self):
+        return self.request.user
+    
+    def update(self, request, *args, **kwargs):
+        super(PersonalDataUpdadeApiView, self).update(request, *args, **kwargs)
+        data = {
+            'status' : True,
+            'message' : 'Ruyxatdan muvafaqiyatli otdingiz',
+            'auth_status' : self.request.user.step
+        }
+        return Response(data)
+    
+    
+    
+    def partial_update(self, request, *args, **kwargs):
+        super(PersonalDataUpdadeApiView, self).partial_update(request, *args, **kwargs)
+        data = {
+            'status' : True,
+            'message' : 'Ruyxatdan muvafaqiyatli otdingiz',
+            'auth_status' : self.request.user.step
+        }
+        return Response(data)
+    
+
+
+
+
+class LoginApiView(TokenObtainPairView):
+    serializer_class = LoginSerializer
+    
+
+
+class LogoutApiView(APIView):
+    serializer_class = LogoutSerializers
+    permission_classes = (IsAuthenticated, )
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            refresh_token = self.request.data['refresh']
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            data = {
+                "status" : True,
+                "message" : "Siz tizimdan chiqdiz"
+            }
+            
+            return Response(data, status=205)
+        except Exception as e:
+            data = {
+                "status" : False,
+                "message" : str(e)
+            }
+            return Response(data, status=400)
+    
 class VerifyCodeApiView(APIView):
     permission_classes = (IsAuthenticated, )
     def post(self, *args, **kwargs):
@@ -49,7 +118,6 @@ class SellerDataUpdateView(UpdateAPIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = SellerDataSerializer
     http_method_names = ['put', 'patch']
-
     def get_object(self):
         return self.request.user
     
@@ -77,5 +145,3 @@ class SellerDataUpdateView(UpdateAPIView):
             }
 
             return Response(data)
-    
-     
