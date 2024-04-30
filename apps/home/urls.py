@@ -1,3 +1,5 @@
+from django.urls import path
+from .views import TaqoslashView
 from rest_framework.urls import path
 from django.urls import re_path
 from .views import( ProductCategoryview, ProductSellerView, SearchFilterView,
@@ -12,7 +14,5 @@ urlpatterns = [
     path('products_price/', ProductListPriceView.as_view(), name='product-list'),
     path('add-wish/', WishListAddApiView.as_view()),
     path('get-wish/', WishlistGetApiView.as_view()),
+    path('taqoslash/', TaqoslashView.as_view(), name='compare-products'),
 ]
-
-
-

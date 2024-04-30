@@ -1,3 +1,6 @@
+from rest_framework import generics
+from .models import Taqoslash
+from .serializers import TaqoslashSerializer
 from django.shortcuts import render
 from rest_framework.views import APIView, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -12,33 +15,32 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import filters
 from rest_framework import generics
 
+class TaqoslashView(generics.ListAPIView):
+    serializer_class = TaqoslashSerializer
 
+    def get_queryset(self):
+        product_uuid = self.request.GET.getlist('product_uuid')
+        return Taqoslash.objects.filter(product__in=product_uuid)[:5]  # Limit to 5 products
 
 class ProductCategoryview(APIView):
     permission_classes = [AllowAny, ]
     serializer_class = ProductCategorySerialize
     
     def get(self , request, uuid):
-         
         querset = Product.objects.filter(category = uuid )# children is not pulli
         serializer_data = self.serializer_class(querset, many = True)
         return Response(serializer_data.data)
     
 class ProductSellerView(APIView):
-    
     permission_classes = [AllowAny]
     serializer_class = ProductCategorySerialize
     
     def get(self, request, uuid):
-        
         queryset = Product.objects.filter(seller = uuid)
         serializer_data = self.serializer_class(queryset, many = True)
-        
         return Response(serializer_data.data)
-    
-    
+
 class SearchFilterView(ListAPIView):
-    
     permission_classes = (AllowAny, )
     queryset = Product.objects.all()
     serializer_class = ProductCategorySerialize
@@ -139,5 +141,3 @@ class WishlistGetApiView(APIView):
         except Exception as e:
             data = {"status": False, "message": f"{e}"}
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-
-

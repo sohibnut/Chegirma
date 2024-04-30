@@ -1,6 +1,6 @@
 from django.db import models
 from apps.base.models import BaseModel
-from mptt.models import MPTTModel, TreeForeignKey
+from mptt.models import MPTTModel,TreeForeignKey
 from apps.accounts.models import UserModel
 from apps.base.enum import CommentType, ProductStatus
 from django.core.validators import FileExtensionValidator
@@ -66,4 +66,7 @@ class Comment(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.author.name} -> comment -> {self.product.name}"
-    
+
+class Taqoslash(BaseModel):
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user_taqoslash')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_taqoslash")
