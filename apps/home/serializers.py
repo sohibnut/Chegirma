@@ -1,7 +1,5 @@
-
-# serializers.py
 from rest_framework import serializers
-from .models import Taqoslash, Product
+from .models import Taqoslash, Product, WishlistItem
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,3 +12,8 @@ class TaqoslashSerializer(serializers.ModelSerializer):
     class Meta:
         model = Taqoslash
         fields = ['name', 'description']  # Add more fields if needed
+
+class WishListAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WishlistItem
+        fields = ["product", "user"]
