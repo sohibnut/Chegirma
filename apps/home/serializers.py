@@ -1,16 +1,5 @@
 from rest_framework import serializers
-from .models import Comment, Product
-from ..accounts.models import UserModel
-
-class PrductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['uuid']
-        
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserModel
-        fields = ['uuid']
+from .models import Comment, Taqoslash, Product, WishlistItem
 
 class CommentSerializer(serializers.ModelSerializer):
     product = PrductSerializer
@@ -19,3 +8,23 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['product', 'author', 'text']
 
+class ProductCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = "__all__"
+        
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['name', 'description']  # Adjust fields as needed
+
+class TaqoslashSerializer(serializers.ModelSerializer):
+    product = ProductSerializer()
+    class Meta:
+        model = Taqoslash
+        fields = ['name', 'description']  # Add more fields if needed
+
+class WishListAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WishlistItem
+        fields = ["product", "user"]
