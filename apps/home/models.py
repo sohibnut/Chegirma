@@ -33,7 +33,7 @@ class Product(BaseModel):
     image = models.ImageField(upload_to='seller/products/', validators=[
         FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'svg', 'heic', 'heif'])
     ])
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_product', blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_product', blank=True)   
     original_price = models.BigIntegerField()
     discount_price = models.BigIntegerField()
     dis_start = models.DateField()
@@ -62,7 +62,7 @@ class Comment(BaseModel):
     author = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user_comments', blank=True)
     type = models.CharField(max_length=10,choices=CommentType.choices())
     text = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='comment_reply')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='comment_reply', null=True)
 
     def __str__(self) -> str:
         return f"{self.author.name} -> comment -> {self.product.name}"
