@@ -5,12 +5,12 @@ from .serializers import TaqoslashSerializer
 from django.shortcuts import render
 from rest_framework.views import APIView, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import WishListAddSerializer, ProductCategorySerialize
+from .serializers import WishListAddSerializer, ProductCategorySerializer
 from django.shortcuts import get_object_or_404
 from apps.accounts.models import UserModel
 from .models import WishlistItem, Product
 from rest_framework.response import Response
-from apps.base.utility import CustomPagination
+# from apps.base.utility import CustomPagination
 # Create your views here.
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import filters
@@ -25,7 +25,7 @@ class TaqoslashView(generics.ListAPIView):
 
 class ProductCategoryview(APIView):
     permission_classes = [AllowAny, ]
-    serializer_class = ProductCategorySerialize
+    serializer_class = ProductCategorySerializer
     
     def get(self , request, uuid):
         querset = Product.objects.filter(category = uuid )# children is not pulli
@@ -34,7 +34,7 @@ class ProductCategoryview(APIView):
     
 class ProductSellerView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = ProductCategorySerialize
+    serializer_class = ProductCategorySerializer
     
     def get(self, request, uuid):
         queryset = Product.objects.filter(seller = uuid)
@@ -70,13 +70,13 @@ class ProductListView(ListAPIView):
 class SearchFilterView(ListAPIView):
     permission_classes = (AllowAny, )
     queryset = Product.objects.all()
-    serializer_class = ProductCategorySerialize
+    serializer_class = ProductCategorySerializer
     filter_backends = [filters.SearchFilter]  ####
     search_fields = ['color__name']
 
 class ProductByColorListView(generics.ListAPIView):
     permission_classes = (AllowAny, )
-    serializer_class = ProductCategorySerialize
+    serializer_class = ProductCategorySerializer
 
     def get_queryset(self):
         color_uuid = self.kwargs['color_uuid']  # assuming the color UUID is passed in the URL
@@ -88,7 +88,7 @@ from django.db.models import Q
 
 
 class ProductListPriceView(generics.ListAPIView):
-    serializer_class = ProductCategorySerialize
+    serializer_class = ProductCategorySerializer
     permission_classes = (AllowAny, )
     
 
@@ -134,7 +134,7 @@ class WishListAddApiView(APIView):
 
 class WishlistGetApiView(APIView):
     permission_classes = [AllowAny, ]
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
 
     def get(self, request, *args, **kwargs):
         try:

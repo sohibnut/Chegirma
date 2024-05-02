@@ -3,7 +3,7 @@ from .views import TaqoslashView
 from rest_framework.urls import path
 from django.urls import re_path
 from .views import( ProductCategoryview, ProductSellerView, SearchFilterView,
-                    WishListAddApiView, WishlistGetApiView, ProductListView
+                    WishListAddApiView, WishlistGetApiView, ProductListView,
                     ProductByColorListView, ProductListPriceView)
 
 urlpatterns = [
