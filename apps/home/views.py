@@ -3,18 +3,22 @@ from rest_framework import generics
 from .models import Taqoslash
 from .serializers import TaqoslashSerializer
 from django.shortcuts import render
+from django.db.models import Q
+from .models import Comment, Product
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .serializers import CommentSerializer
+from django.http import HttpResponse
+from rest_framework.parsers import JSONParser
+from ..base.enum import CommentType
 from rest_framework.views import APIView, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import WishListAddSerializer, ProductCategorySerializer
 from django.shortcuts import get_object_or_404
 from apps.accounts.models import UserModel
 from .models import WishlistItem, Product
-from rest_framework.response import Response
-# from apps.base.utility import CustomPagination
-# Create your views here.
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import filters
-from rest_framework import generics
 
 class TaqoslashView(generics.ListAPIView):
     serializer_class = TaqoslashSerializer
@@ -84,7 +88,7 @@ class ProductByColorListView(generics.ListAPIView):
     
 # views.py
 
-from django.db.models import Q
+
 
 
 class ProductListPriceView(generics.ListAPIView):
@@ -168,3 +172,62 @@ class WishlistGetApiView(APIView):
         except Exception as e:
             data = {"status": False, "message": f"{e}"}
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+          
+class NewCommentView(APIView):
+    def get(self, request):
+        product_data = Product.objects.all().values_list()
+        user_data = UserModel.objects.all().values_list()
+        for i in product_data:
+            if request.data['product_id'] == str(i[1]):
+                for j in user_data:  
+                    if str(j[9]) == request.data['author_id']:
+                        data = Comment(
+                            product = Product.objects.filter(uuid=request.data['product_id'])[0],
+                            author = UserModel.objects.filter(uuid=request.data['author_id'])[0],
+                            type = "New",
+                            text = request.data['text'],
+                        )
+                        data.type="new"
+                        data.save()
+                        return Response(
+                            {
+                                'status' : True
+                            }
+                        )    
+        return Response(
+            {
+                'status' : False
+            }
+        )    
+                             
+     
+
+
+class ReplyCommentView(APIView):
+    def get(self, request):
+        user_data = UserModel.objects.all().values_list()
+        comment_data = Comment.objects.all().values_list()
+        for i in comment_data:
+            if str(i[1]) == request.data['comment_id']:
+                for j in user_data:
+                    if request.data['author_id'] == str(j[9]):
+                        data = Comment(
+                            product = Product.objects.filter(uuid=str(i[4]))[0],
+                            author = UserModel.objects.filter(uuid=request.data['author_id'])[0],
+                            type = 'reply',
+                            text = request.data['text'],
+                      
+                        )
+                        data.type = 'reply'
+                        data.save()
+                        return Response(
+                            {
+                                'status' : True,
+                              
+                            }
+                        )    
+        return Response(
+            {
+                'status' : False
+            }
+        )    

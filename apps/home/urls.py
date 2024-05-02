@@ -4,7 +4,8 @@ from rest_framework.urls import path
 from django.urls import re_path
 from .views import( ProductCategoryview, ProductSellerView, SearchFilterView,
                     WishListAddApiView, WishlistGetApiView, ProductListView,
-                    ProductByColorListView, ProductListPriceView)
+                    ProductByColorListView, ProductListPriceView, NewCommentView, 
+                    ReplyCommentView)
 
 urlpatterns = [
     path("category/<uuid:uuid>/", ProductCategoryview.as_view(), name='categoryfilter'),
@@ -16,4 +17,6 @@ urlpatterns = [
     path('add-wish/', WishListAddApiView.as_view()),
     path('get-wish/', WishlistGetApiView.as_view()),
     path('taqoslash/', TaqoslashView.as_view(), name='compare-products'),
+    path('new_comment/', NewCommentView.as_view()),
+    path('reply_comment/', ReplyCommentView.as_view()),
 ]

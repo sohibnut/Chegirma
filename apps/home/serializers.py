@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Taqoslash, Product, WishlistItem
+from .models import Comment, Taqoslash, Product, WishlistItem
+
+class CommentSerializer(serializers.ModelSerializer):
+    product = PrductSerializer
+    author = UserSerializer
+    class Meta:
+        model = Comment
+        fields = ['product', 'author', 'text']
 
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
