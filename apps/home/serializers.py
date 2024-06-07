@@ -2,8 +2,6 @@ from rest_framework import serializers
 from .models import Comment, Taqoslash, Product, WishlistItem
 
 class CommentSerializer(serializers.ModelSerializer):
-    product = PrductSerializer
-    author = UserSerializer
     class Meta:
         model = Comment
         fields = ['product', 'author', 'text']
@@ -19,10 +17,10 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['name', 'description']  # Adjust fields as needed
 
 class TaqoslashSerializer(serializers.ModelSerializer):
-    product = ProductSerializer()
+    # product = ProductSerializer()
     class Meta:
         model = Taqoslash
-        fields = ['name', 'description']  # Add more fields if needed
+        fields = "__all__"  # Add more fields if needed
 
 class WishListAddSerializer(serializers.ModelSerializer):
     class Meta:
