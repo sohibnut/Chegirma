@@ -6,9 +6,6 @@ from apps.base.enum import CommentType, ProductStatus
 from django.core.validators import FileExtensionValidator
 # Create your models here.
 
-
-
-
 class Category(MPTTModel, BaseModel):
     name = models.CharField(max_length=255, null=True, blank=True)
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children')

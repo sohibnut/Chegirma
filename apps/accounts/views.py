@@ -2,15 +2,16 @@ from django.shortcuts import render
 from rest_framework.generics import CreateAPIView,UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializer import SignUpSerializer,PersonalDataSerializer,LoginSerializer,LogoutSerializers
+from .serializer import (SignUpSerializer,PersonalDataSerializer,LoginSerializer,LogoutSerializers,
+                         SellerSignUpSerializer, SellerDataSerializer, UserContactSerializer)
 from .models import UserModel
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from datetime import datetime 
-from .signup_serializers import SellerSignUpSerializer, SellerDataSerializer, UserContactSerializer
 # Create your views here.
+
 class SellerSignUpApiView(CreateAPIView):
     permission_classes = (AllowAny, )
     model = UserModel 
@@ -55,8 +56,6 @@ class PersonalDataUpdadeApiView(UpdateAPIView):
 class LoginApiView(TokenObtainPairView):
     serializer_class = LoginSerializer
     
-
-
 class LogoutApiView(APIView):
     serializer_class = LogoutSerializers
     permission_classes = (IsAuthenticated, )

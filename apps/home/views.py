@@ -69,8 +69,8 @@ class ProductListView(ListAPIView):
             queryset = queryset.filter(discount_price__lte=max_price)
         if size:
             queryset = queryset.filter(size__uuid__in=size)
-        return queryset
-      
+        return queryset   
+
 class SearchFilterView(ListAPIView):
     permission_classes = (AllowAny, )
     queryset = Product.objects.all()
@@ -86,11 +86,6 @@ class ProductByColorListView(generics.ListAPIView):
         color_uuid = self.kwargs['color_uuid']  # assuming the color UUID is passed in the URL
         return Product.objects.filter(color__uuid = color_uuid)
     
-# views.py
-
-
-
-
 class ProductListPriceView(generics.ListAPIView):
     serializer_class = ProductCategorySerializer
     permission_classes = (AllowAny, )
@@ -108,9 +103,6 @@ class ProductListPriceView(generics.ListAPIView):
             queryset = queryset.filter(discount_price__lte=max_price)
 
         return queryset
-
-
-
 
 class WishListAddApiView(APIView):
     permission_classes = [AllowAny, ]
@@ -133,8 +125,6 @@ class WishListAddApiView(APIView):
             serializer.save()
             response_data = {"status": True, "message": f"Wish Listga qo'shildi {product}"}
             return Response(response_data, status=status.HTTP_201_CREATED)
-        
-
 
 class WishlistGetApiView(APIView):
     permission_classes = [AllowAny, ]
@@ -172,7 +162,7 @@ class WishlistGetApiView(APIView):
         except Exception as e:
             data = {"status": False, "message": f"{e}"}
             return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-          
+
 class NewCommentView(APIView):
     def get(self, request):
         product_data = Product.objects.all().values_list()
@@ -199,9 +189,6 @@ class NewCommentView(APIView):
                 'status' : False
             }
         )    
-                             
-     
-
 
 class ReplyCommentView(APIView):
     def get(self, request):
