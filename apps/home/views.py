@@ -133,7 +133,7 @@ class WishListAddApiView(APIView):
         product = data.get("product")
         serializer = self.serializer_class(data=data)
         # TODO: delete wishlist
-        check_cloth = WishlistItem.objects.filter(product__uuid=product).first()
+        check_cloth = WishlistItem.objects.filter(product__uuid=product, user__username=user.username).first()
         if check_cloth:
             check_cloth.delete()
             response_data = {
