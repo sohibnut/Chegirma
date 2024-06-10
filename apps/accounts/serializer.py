@@ -30,6 +30,8 @@ class SignUpSerializer(serializers.ModelSerializer):
         user = super(SignUpSerializer, self).create(validated_data)
         code = user.create_code()
         user.username = user.email
+        user.role = 'client'
+        user.step = 'sent_email'
         user.save()
         send_email(user.email, code)
         return user
@@ -40,9 +42,9 @@ class SignUpSerializer(serializers.ModelSerializer):
         return data
     
 class PersonalDataSerializer(serializers.Serializer):
-    first_name = serializers.CharField(write_only=True, required=True)
-    last_name = serializers.CharField(write_only=True, required=True)
-    username = serializers.CharField(write_only=True, required=True)
+    name = serializers.CharField(write_only=True, required=True)
+    # last_name = serializers.CharField(write_only=True, required=True)
+    # username = serializers.CharField(write_only=True, required=True)
     password = serializers.CharField(write_only=True, required=True)
     confirm_password = serializers.CharField(write_only=True, required=True)
     
@@ -99,62 +101,40 @@ class LoginSerializer(TokenObtainPairSerializer):
     
     def auth_validate(self, data):
         user_input = data.get('user_input')
-        password = data.get('password')
-        
-        if check_user(user_input) == 'email':
-         
-            username = self.auth_user(user_input)
-            
-        else:
-            data = {
-                'status' : False,
-                'message' : 'Siz Kiritgan malumotlarga mos foydalanuvchi topilmadi iltimos qaytadan tekshirib kiriting!'
-            }
-            raise ValidationError(data)
-        
-        
+        password = data.get('password')         
+        username = self.auth_user(user_input)
         
         user_kwargs = {
             self.username_field : username,
             "password" : password
         }
-        
-        user1 = UserModel.objects.get(username = username)
-        if user1.step != "complate":
-            data = {
-            'status' : False,
-                'message' : 'Siz hali Toliq ruyxatdan otmagansiz!'
-            }
-            raise ValidationError(data) 
-        
+
         user = authenticate(**user_kwargs)
         if user is not None:
             self.user = user
         else:
             data = {
-            'status' : False,
-                'message' : 'User yoki parol xato'
+                'status' : False,
+                'message' : 'parol xato'
             }
             raise ValidationError(data) 
         
     def auth_user(self, email):
-        user = UserModel.objects.get(email = email)
-        if not user:
+        user = UserModel.objects.filter(email = email).first()
+        if not user or user.step!='complate':
             data = {
-            'status' : False,
-                'message' : 'Siz Kiritgan malumotlarga mos user topilmadi iltimos qaytadan tekshirib kiriting!'
+                'status' : False,
+                'message' : 'User with this email does not exists or you don`t complate sign up yet!'
             }
             raise ValidationError(data) 
         return user.username
-    
-    
-    
     
     def validate(self, data):
         self.auth_validate(data)
         
         data = self.user.token()
         data['full_name'] = self.user.name
+        data['status'] = True
         
         return data
     
@@ -198,7 +178,7 @@ class SellerSignUpSerializer(serializers.ModelSerializer):
             step='sent_email'
         )
         code = user.create_code()
-        sent_email(email=user.email, subject='chegirma tasdiqlash kodi',code=code)
+        sent_email(email=user.email, subject='Chegirma tasdiqlash kodi',code=code)
         user.set_password(str(uuid.uuid4().__str__().split("-")[1]))
         user.save()
         return user
@@ -240,7 +220,7 @@ class SellerDataSerializer(serializers.Serializer):
             instance.step = 'complate'
         instance.save()
         return instance    
-    
+ 
 class UserContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactModel

@@ -30,6 +30,8 @@ class PersonalDataUpdadeApiView(UpdateAPIView):
         return self.request.user
     
     def update(self, request, *args, **kwargs):
+        if request.user.step != 'verify_code':
+            raise ValidationError({"status" : False, "msg": "First sent verify code"})
         super(PersonalDataUpdadeApiView, self).update(request, *args, **kwargs)
         data = {
             'status' : True,
@@ -48,10 +50,6 @@ class PersonalDataUpdadeApiView(UpdateAPIView):
             'auth_status' : self.request.user.step
         }
         return Response(data)
-    
-
-
-
 
 class LoginApiView(TokenObtainPairView):
     serializer_class = LoginSerializer
@@ -121,6 +119,12 @@ class SellerDataUpdateView(UpdateAPIView):
         return self.request.user
     
     def update(self, request, *args, **kwargs):
+        if request.user.step != 'verify_code':
+            edata = {
+                "status" : False,
+                "msg" : "First sent verification code!"
+            }
+            raise ValidationError(edata)
         super().update(request, *args, **kwargs)
         data = {
             'seller' : request.user.uuid,
@@ -138,7 +142,7 @@ class SellerDataUpdateView(UpdateAPIView):
             contact.save()
             data = {
                 "status" : True,
-                'message' : 'You signed up successfully',
+                'msg' : 'You signed up successfully',
                 'step' : self.request.user.step,
                 'data' : contact.data
             }
