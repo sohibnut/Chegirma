@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.generics import CreateAPIView,UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -30,7 +29,7 @@ class PersonalDataUpdadeApiView(UpdateAPIView):
         return self.request.user
     
     def update(self, request, *args, **kwargs):
-        if request.user.step != 'verify_code':
+        if request.user.step == 'sent_email':
             raise ValidationError({"status" : False, "msg": "First sent verify code"})
         super(PersonalDataUpdadeApiView, self).update(request, *args, **kwargs)
         data = {
@@ -43,11 +42,13 @@ class PersonalDataUpdadeApiView(UpdateAPIView):
     
     
     def partial_update(self, request, *args, **kwargs):
-        super(PersonalDataUpdadeApiView, self).partial_update(request, *args, **kwargs)
+        rdata = super(PersonalDataUpdadeApiView, self).partial_update(request, *args, **kwargs)
         data = {
             'status' : True,
-            'message' : 'Ruyxatdan muvafaqiyatli otdingiz',
-            'auth_status' : self.request.user.step
+            'message' : 'data changed successfully',
+
+            'auth_status' : self.request.user.step,
+            'data' : request.user.name
         }
         return Response(data)
 
@@ -114,12 +115,12 @@ class VerifyCodeApiView(APIView):
 class SellerDataUpdateView(UpdateAPIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = SellerDataSerializer
-    http_method_names = ['put', 'patch']
+    http_method_names = ['put']
     def get_object(self):
         return self.request.user
     
     def update(self, request, *args, **kwargs):
-        if request.user.step != 'verify_code':
+        if request.user.step == 'sent_email':
             edata = {
                 "status" : False,
                 "msg" : "First sent verification code!"
@@ -148,3 +149,40 @@ class SellerDataUpdateView(UpdateAPIView):
             }
 
             return Response(data)
+        
+class PasswordChangeView(APIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = SellerDataSerializer
+    def post(self, request):
+        old_psw = request.data.get('old_password')
+        rdata = {
+            'password' : request.data.get('password'),
+            'confirm_password' : request.data.get('confirm_password')
+        }
+        user = request.user
+        if user.check_password(old_psw):
+            name = user.name
+            rdata['name'] = name
+            serializer = self.serializer_class(instance=user,data=rdata)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                data = {
+                    "status" : True,
+                    "msg" : "Password changed successfully"
+                }
+                Response(data=data)
+        else:
+            data = {
+                "Status" : False,
+                'msg' : "Old password is wrong!"
+            }
+        return Response(data)
+
+class SellerDataChangeView(UpdateAPIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = UserContactSerializer
+    http_method_names = ['patch']
+    def get_object(self):
+        return self.request.user.user_contact
+    
+  

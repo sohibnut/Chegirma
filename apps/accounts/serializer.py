@@ -220,7 +220,7 @@ class SellerDataSerializer(serializers.Serializer):
             instance.step = 'complate'
         instance.save()
         return instance    
- 
+
 class UserContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactModel

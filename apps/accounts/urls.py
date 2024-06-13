@@ -1,10 +1,12 @@
 from django.urls import path
-from .views import SellerSignUpApiView, SellerDataUpdateView
-from .views import (SignUpApiView,
-                   VerifyCodeApiView,
+from .views import (SignUpApiView, SellerSignUpApiView, SellerDataUpdateView,
+                   VerifyCodeApiView, SellerDataChangeView, 
                    PersonalDataUpdadeApiView,
                    LoginApiView,
-                   LogoutApiView
+                   LogoutApiView, 
+                   PasswordChangeView,
+
+
                    )
 
 urlpatterns = [
@@ -14,5 +16,7 @@ urlpatterns = [
     path('seller_data/', SellerDataUpdateView.as_view(), name='seller_data'),
     path('personal_data/',PersonalDataUpdadeApiView.as_view()),
     path('login/',LoginApiView.as_view()),
-    path('logout/',LogoutApiView.as_view())
+    path('logout/',LogoutApiView.as_view()),
+    path('password_change/',PasswordChangeView.as_view()),
+    path('change_seller_data/', SellerDataChangeView.as_view()),
 ]
