@@ -1,9 +1,14 @@
+from rest_framework.pagination import PageNumberPagination
 import re
 import threading
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
 
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class EmailThread(threading.Thread):
     def __init__(self, email):
@@ -21,7 +26,6 @@ class Email:
             body = data['body'],
             to = [data['to_email']]
         )        
-
         if data.get('content_type') == "html":
             email.content_subtype = 'html'
 
@@ -41,3 +45,4 @@ def sent_email(email, subject, code):
         }
         
     )
+
