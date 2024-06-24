@@ -30,14 +30,14 @@ class Product(BaseModel):
     image = models.ImageField(upload_to='seller/products/', validators=[
         FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'svg', 'heic', 'heif'])
     ])
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_product', blank=True)   
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_product',null=True, blank=True)   
     original_price = models.BigIntegerField()
     discount_price = models.BigIntegerField()
     dis_start = models.DateField()
     dis_end = models.DateField()
     link = models.URLField(null=True, blank=True)
-    size = models.ManyToManyField(Size, related_name='size_products')
-    color = models.ManyToManyField(Color, related_name='color_products')
+    size = models.ManyToManyField(Size, related_name='size_products', null=True, blank=True)
+    color = models.ManyToManyField(Color, related_name='color_products', null=True, blank=True)
     status = models.CharField(max_length=10, choices=ProductStatus.choices())
 
     @property

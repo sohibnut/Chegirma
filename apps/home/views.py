@@ -1,4 +1,6 @@
 import uuid
+from rest_framework.exceptions import ValidationError
+from apps.accounts.serializer import UserContactSerializer
 from rest_framework import generics
 from .models import Taqoslash
 from .serializers import TaqoslashSerializer
@@ -13,9 +15,9 @@ from rest_framework.parsers import JSONParser
 from ..base.enum import CommentType
 from rest_framework.views import APIView, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import WishListAddSerializer, ProductCategorySerializer
+from .serializers import WishListAddSerializer, ProductSerializer
 from django.shortcuts import get_object_or_404
-from apps.accounts.models import UserModel
+from apps.accounts.models import UserModel, ContactModel
 from .models import WishlistItem
 from rest_framework.response import Response
 from apps.base.utility import CustomPagination
@@ -38,7 +40,7 @@ class ProductCategoryview(APIView):
     permission_classes = [
         AllowAny,
     ]
-    serializer_class = ProductCategorySerializer
+    serializer_class = ProductSerializer
 
     def get(self, request, uuid):
         querset = Product.objects.filter(category=uuid)  # children is not pulli
@@ -48,20 +50,30 @@ class ProductCategoryview(APIView):
 
 class ProductSellerView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = ProductCategorySerializer
+    serializer_class = ProductSerializer
 
     def get(self, request, uuid):
-        queryset = Product.objects.filter(seller=uuid)
+        seller = get_object_or_404(UserModel, uuid=uuid)
+        contact = UserContactSerializer(seller.user_contact)
+        
+        queryset = Product.objects.filter(seller=seller.uuid)
         serializer_data = self.serializer_class(queryset, many=True)
-        return Response(serializer_data.data)
+        data = {
+            'status' : True,
+            'name' : seller.name,
+            'seller' : contact.data,
+            'products' : serializer_data.data
+        }
+        return Response(data)
 
 
 class ProductListView(ListAPIView):
-    serializer_class = ProductCategorySerializer
+    pagination_class = CustomPagination
+    serializer_class = ProductSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        queryset = Product.objects.all()
+        queryset = Product.objects.filter(status='publish')
 
         category_uuid = self.request.query_params.get("category_uuid", None)
         color_uuid = self.request.query_params.getlist("color_uuid", None)
@@ -86,14 +98,14 @@ class ProductListView(ListAPIView):
 class SearchFilterView(ListAPIView):
     permission_classes = (AllowAny,)
     queryset = Product.objects.all()
-    serializer_class = ProductCategorySerializer
+    serializer_class = ProductSerializer
     filter_backends = [filters.SearchFilter]  ####
     search_fields = ["color__name"]
 
 
 class ProductByColorListView(generics.ListAPIView):
     permission_classes = (AllowAny,)
-    serializer_class = ProductCategorySerializer
+    serializer_class = ProductSerializer
 
     def get_queryset(self):
         color_uuid = self.kwargs[
@@ -103,7 +115,7 @@ class ProductByColorListView(generics.ListAPIView):
 
 
 class ProductListPriceView(generics.ListAPIView):
-    serializer_class = ProductCategorySerializer
+    serializer_class = ProductSerializer
     permission_classes = (AllowAny,)
 
     def get_queryset(self):
@@ -128,12 +140,13 @@ class WishListAddApiView(APIView):
 
     def post(self, request, *args, **kwargs):
         user = get_object_or_404(UserModel, username=request.user.username)
-        request.data["user"] = user.uuid
-        data = request.data
-        product = data.get("product")
+        product = get_object_or_404(Product, uuid=request.data.get('product'))
+        data = dict()
+        data['product'] = product.uuid
+        data["user"] = user.uuid
         serializer = self.serializer_class(data=data)
         # TODO: delete wishlist
-        check_cloth = WishlistItem.objects.filter(product__uuid=product, user__username=user.username).first()
+        check_cloth = WishlistItem.objects.filter(product=product, user=user).first()
         if check_cloth:
             check_cloth.delete()
             response_data = {
@@ -149,6 +162,7 @@ class WishListAddApiView(APIView):
                 "message": f"Wish Listga qo'shildi --->  {product}",
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
+        
 
 
 class WishlistGetApiView(APIView):
@@ -220,3 +234,72 @@ class ReplyCommentView(APIView):
                             }
                         )
         return Response({"status": False})
+
+
+class ProductView(APIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = ProductSerializer
+    def get(self, request):
+        uuid = request.data.get('uuid')
+        item = get_object_or_404(Product, uuid=uuid)
+        serializer = self.serializer_class(instance=item)
+        return Response(data=serializer.data)
+
+    def post(self, request):
+        data = request.data.copy()
+        data['seller'] = request.user.uuid
+        data['is_active'] = True
+        serializer = self.serializer_class(data = data)
+        if serializer.is_valid(raise_exception=True) and request.user.role == 'seller':
+            serializer.seller = request.user.uuid
+            serializer.save()
+            r_data = {
+                'status' : True,
+                'msg' : 'Saved',
+                'data' : serializer.data
+            }
+            return Response(r_data)
+        else:
+            r_data = {
+                'status' : False, 
+                'msg' : 'You have not access to do this!'
+            }
+            raise ValidationError(r_data)
+        
+    def patch(self, request):
+        data = request.data
+        item = get_object_or_404(Product, uuid=data['uuid'])
+        
+        serializer = self.serializer_class(instance=item, data=data, partial=True)
+        if serializer.is_valid(raise_exception=True) and request.user.uuid==item.seller.uuid:
+            serializer.save()
+            r_data = {
+                'status' : True,
+                'msg' : 'Changed',
+                'data' : serializer.data
+            }
+            return Response(r_data)
+        else:
+            print(request.user.uuid)
+            print(item.seller.uuid)
+            r_data = {
+                'status' : False, 
+                'msg' : 'You have not access to do this!'
+            }
+            raise ValidationError(r_data)
+        
+    def delete(self, request):
+        uuid = request.data.get('uuid')
+        item = get_object_or_404(Product, uuid=uuid)
+        if request.user.uuid==item.seller.uuid:
+            item.delete()
+            r_data = {
+                'status' : True,
+                'msg' : 'Deleted'
+            }
+        else:
+            r_data = {
+                'status' : False,
+                'msg' : 'You have not access to do this!'
+            }
+        return Response(r_data)

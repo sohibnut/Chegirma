@@ -4,17 +4,13 @@ from .models import Comment, Taqoslash, Product, WishlistItem
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['product', 'author', 'text']
+        fields = '__all__'
 
-class ProductCategorySerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = "__all__"
         
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['name', 'description']  # Adjust fields as needed
 
 class TaqoslashSerializer(serializers.ModelSerializer):
     # product = ProductSerializer()
