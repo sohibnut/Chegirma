@@ -2,8 +2,8 @@ import uuid
 from rest_framework.exceptions import ValidationError
 from apps.accounts.serializer import UserContactSerializer
 from rest_framework import generics
-from .models import Taqoslash
-from .serializers import TaqoslashSerializer
+from .models import Compare
+from .serializers import CompareSerializer
 from django.shortcuts import render
 from django.db.models import Q
 from .models import Comment, Product
@@ -24,16 +24,6 @@ from apps.base.utility import CustomPagination
 from .models import WishlistItem, Product
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import filters
-
-
-class TaqoslashView(generics.ListAPIView):
-    serializer_class = TaqoslashSerializer
-
-    def get_queryset(self):
-        product_uuid = self.request.GET.getlist("product_uuid")
-        return Taqoslash.objects.filter(product__in=product_uuid)[
-            :5
-        ]  # Limit to 5 products
 
 
 class ProductCategoryview(APIView):
@@ -100,7 +90,7 @@ class SearchFilterView(ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [filters.SearchFilter]  ####
-    search_fields = ["color__name"]
+    search_fields = ["name", 'disc']
 
 
 class ProductByColorListView(generics.ListAPIView):
@@ -161,8 +151,7 @@ class WishListAddApiView(APIView):
                 "status": True,
                 "message": f"Wish Listga qo'shildi --->  {product}",
             }
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        
+            return Response(response_data, status=status.HTTP_201_CREATED) 
 
 
 class WishlistGetApiView(APIView):
@@ -187,54 +176,64 @@ class WishlistGetApiView(APIView):
 
 
 class NewCommentView(APIView):
+    permission_classes = (IsAuthenticated, )
+    model = Comment
+    serializer_class = CommentSerializer
+    def post(self, request):
+        user = request.user
+        product = get_object_or_404(Product, uuid=request.data['product'])
+        data = request.data.copy()
+        data['author'] = user.uuid
+        data['type'] = 'new'
+        data['is_active'] = True
+        item, cr = self.model.objects.get_or_create(author=user, product=product)
+        serializer = self.serializer_class(instance=item, data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            r_data = {
+                'status' : True,
+                'msg' : 'Comment Created'
+            }
+            return Response(r_data)
+        
     def get(self, request):
-        product_data = Product.objects.all().values_list()
-        user_data = UserModel.objects.all().values_list()
-        for i in product_data:
-            if request.data["product_id"] == str(i[1]):
-                for j in user_data:
-                    if str(j[9]) == request.data["author_id"]:
-                        data = Comment(
-                            product=Product.objects.filter(
-                                uuid=request.data["product_id"]
-                            )[0],
-                            author=UserModel.objects.filter(
-                                uuid=request.data["author_id"]
-                            )[0],
-                            type="New",
-                            text=request.data["text"],
-                        )
-                        data.type = "new"
-                        data.save()
-                        return Response({"status": True})
-        return Response({"status": False})
-
-
+        item = self.model.objects.filter(is_active=True, product=request.data['product'])
+        serializer = self.serializer_class(instance=item, many=True)
+        r_data = {
+            'status' : True, 
+            'data' : serializer.data
+        }
+        return Response(r_data)
+        
+        
 class ReplyCommentView(APIView):
-    def get(self, request):
-        user_data = UserModel.objects.all().values_list()
-        comment_data = Comment.objects.all().values_list()
-        for i in comment_data:
-            if str(i[1]) == request.data["comment_id"]:
-                for j in user_data:
-                    if request.data["author_id"] == str(j[9]):
-                        data = Comment(
-                            product=Product.objects.filter(uuid=str(i[4]))[0],
-                            author=UserModel.objects.filter(
-                                uuid=request.data["author_id"]
-                            )[0],
-                            type="reply",
-                            text=request.data["text"],
-                        )
-                        data.type = "reply"
-                        data.save()
-                        return Response(
-                            {
-                                "status": True,
-                            }
-                        )
-        return Response({"status": False})
+    permission_classes = (IsAuthenticated, )
+    model = Comment
+    serializer_class = CommentSerializer
+    def post(self, request):
+        data = request.data.copy()
+        data['author'] = request.user.uuid
+        data['type'] = 'reply'
+        data['is_active'] = True
+        parent = get_object_or_404(self.model, uuid=data['parent'])
 
+        product = get_object_or_404(Product, uuid = request.data.get('product'))
+        if request.user == product.seller and parent.type == 'new':
+            serializer = self.serializer_class(data=data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                r_data = {
+                    'status' : True,
+                    'msg' : 'Reply created',
+                    'data' : serializer.data
+                }
+                return Response(r_data)
+        else:
+            r_data = {
+                'status' : False,
+                'msg' : 'You have not access to do this!'
+            }    
+            raise ValidationError(r_data)
 
 class ProductView(APIView):
     permission_classes = (IsAuthenticated, )
@@ -303,3 +302,61 @@ class ProductView(APIView):
                 'msg' : 'You have not access to do this!'
             }
         return Response(r_data)
+    
+
+class ComparingView(APIView):
+    permission_classes = (IsAuthenticated, )
+    serializer_class = CompareSerializer
+    model = Compare
+    def post(self, request):
+        user = request.user
+        item = get_object_or_404(Product, uuid = request.data['product'])
+        data = dict()
+        data['product'] = item.uuid
+        data["user"] = user.uuid
+
+        if self.model.objects.filter(product=item, user=user):
+            r_data = {
+                'status' : False,
+                'msg' : 'This product already in your comparing list!'
+
+            }
+        else:
+            serializer = self.serializer_class(data=data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()   
+                r_data = {
+                    'status' : True,
+                    'msg' : 'comparing object created',
+                    'data' : serializer.data
+                }
+        return Response(data=r_data)   
+
+    def get(self, request):
+        user = request.user
+        items = self.model.objects.filter(is_active=True, user=user)
+        serializer = self.serializer_class(instance=items, many=True)
+        r_data = {
+            'status' : True,
+            'data' : serializer.data
+        } 
+        return Response(data=r_data)
+    
+    def delete(self, request):
+        uuid = request.data.get('uuid')
+        item = get_object_or_404(self.model, uuid=uuid)
+        if item.user == request.user:
+            item.delete()
+            r_data = {
+                'status' : True, 
+                'msg' : 'Object deleted'
+            }
+            return Response(r_data)
+        else:
+            r_data = {
+                'status' : False,
+                'msg' : 'you can not delete this object'
+            }
+            raise ValidationError(r_data)
+        
+

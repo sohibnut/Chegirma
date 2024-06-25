@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Comment, Taqoslash, Product, WishlistItem
+from .models import Comment, Compare, Product, WishlistItem
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,10 +12,10 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 
-class TaqoslashSerializer(serializers.ModelSerializer):
+class CompareSerializer(serializers.ModelSerializer):
     # product = ProductSerializer()
     class Meta:
-        model = Taqoslash
+        model = Compare
         fields = "__all__"  # Add more fields if needed
 
 class WishListAddSerializer(serializers.ModelSerializer):
