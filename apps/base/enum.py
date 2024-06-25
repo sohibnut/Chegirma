@@ -9,7 +9,6 @@ class UserRol(Enum):
     def choices(cls):
         return tuple((key.value, key.name) for key in cls)
     
-
 class UserStep(Enum):
     SENT_EMAIL = 'sent_email'
     VERIFY_CODE = 'verify_code'

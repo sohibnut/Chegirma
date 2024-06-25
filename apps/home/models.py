@@ -1,13 +1,10 @@
 from django.db import models
 from apps.base.models import BaseModel
-from mptt.models import MPTTModel, TreeForeignKey
+from mptt.models import MPTTModel,TreeForeignKey
 from apps.accounts.models import UserModel
 from apps.base.enum import CommentType, ProductStatus
 from django.core.validators import FileExtensionValidator
 # Create your models here.
-
-
-
 
 class Category(MPTTModel, BaseModel):
     name = models.CharField(max_length=255, null=True, blank=True)
@@ -33,14 +30,14 @@ class Product(BaseModel):
     image = models.ImageField(upload_to='seller/products/', validators=[
         FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'svg', 'heic', 'heif'])
     ])
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_product', blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='category_product',null=True, blank=True)   
     original_price = models.BigIntegerField()
     discount_price = models.BigIntegerField()
     dis_start = models.DateField()
     dis_end = models.DateField()
     link = models.URLField(null=True, blank=True)
-    size = models.ManyToManyField(Size, related_name='size_products')
-    color = models.ManyToManyField(Color, related_name='color_products')
+    size = models.ManyToManyField(Size, related_name='size_products', blank=True)
+    color = models.ManyToManyField(Color, related_name='color_products', blank=True)
     status = models.CharField(max_length=10, choices=ProductStatus.choices())
 
     @property
@@ -62,7 +59,14 @@ class Comment(BaseModel):
     author = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user_comments', blank=True)
     type = models.CharField(max_length=10,choices=CommentType.choices())
     text = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='comment_reply')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='comment_reply', null=True, blank=True)
 
     def __str__(self) -> str:
-        return f"{self.author.name} -> comment -> {self.product.name}"
+        return f"{self.author.name} -> comment -> {self.product.name}  reply [ {self.parent} ]"
+
+class Compare(BaseModel):
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='user_taqoslash')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_taqoslash")
+
+    def __str__(self) -> str:
+        return f"{self.user.name} -> Comparing Item -> {self.product.name}"
