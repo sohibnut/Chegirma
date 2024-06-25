@@ -67,7 +67,6 @@ class ProductListView(ListAPIView):
 
         category_uuid = self.request.query_params.get("category_uuid", None)
         color_uuid = self.request.query_params.getlist("color_uuid", None)
-        print(color_uuid)
         max_price = self.request.query_params.get("max_price", None)
         min_price = self.request.query_params.get("min_price", None)
         size = self.request.query_params.getlist("size", None)
