@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-gk8_7v5ssuf%$5m$^v^2h0!^4@!%fcdj0&-kaku7cz71dv_ml(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.126', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.0.126', 'localhost', '127.0.0.1', 'sohibnut.pythonanywhere.com']
 
 
 # Application definition
@@ -158,7 +158,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        
+
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 1  # Number of items per page
