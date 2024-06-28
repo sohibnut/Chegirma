@@ -26,8 +26,6 @@ SECRET_KEY = 'django-insecure-gk8_7v5ssuf%$5m$^v^2h0!^4@!%fcdj0&-kaku7cz71dv_ml(
 DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.0.126', 'localhost', '127.0.0.1', 'sohibnut.pythonanywhere.com']
-
-
 # Application definition
 
 INSTALLED_APPS = [
